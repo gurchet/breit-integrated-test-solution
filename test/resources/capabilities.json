@@ -1,0 +1,12 @@
+[
+	{
+		"platformName": "Android",
+		"deviceName": "Q8PJTKQGTO5P7HQK",
+		"automationName": "uiAutomator2",
+		"osVersion": "10",
+		"appType": "native",
+		"appPackage": "com.fivemobile.thescore",
+		"appActivity": ".ui.MainActivity",
+		"noReset": false
+	}
+]

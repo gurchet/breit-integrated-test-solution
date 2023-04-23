@@ -57,4 +57,4 @@ def stop_appium_service():
 
 
 def get_appium_server_url():
-    urlparse("http://" + get_config("appium_host_url") + ":" + socket_number + "/wd/hub/")
+    urlparse("http://" + get_config("appium_host") + ":" + socket_number + "/wd/hub/")

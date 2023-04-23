@@ -63,7 +63,7 @@ def install_app_on_device(device_name, app_path):
 def get_available_socket():
     sockets_list = get_config("sockets").split(",")
     for socket_number in sockets_list:
-        if is_port_available(get_config("appium_host_url"), socket_number):
+        if is_port_available(get_config("appium_host"), socket_number):
             return int(socket_number)
     return 0
 

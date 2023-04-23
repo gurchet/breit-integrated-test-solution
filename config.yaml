@@ -1,4 +1,4 @@
-appium_host_url:127.0.0.1
+appium_host:127.0.0.1
 appium_auto_run:false
 app_auto_install:false
 capabilities_location:None

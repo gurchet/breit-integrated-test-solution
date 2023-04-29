@@ -1,7 +1,7 @@
 from base.constants import Commands, Args, Urls
 from base.request_helper import get_appium_status
 from src.base.utilities import install_app_on_device, get_device, build_behave_command, \
-    get_config, run_and_capture_cmd, run_cmd_in_spawned_process, run_sync_cmd, get_available_socket
+    get_config, run_and_capture_cmd, run_cmd_in_spawned_process, run_sync_cmd, get_available_appium_socket, is_socket_available
 from urllib.parse import urlparse
 from appium import webdriver
 
@@ -21,6 +21,8 @@ def get_driver():
 
 def perform_complete_set_up():
     global current_appium
+    if setup_adb() is False:
+        return False
     if setup_device() is False:
         return False
     if setup_appium() is False:
@@ -77,16 +79,17 @@ def setup_device():
     return True
 
 
-def quit_driver():
-    global current_driver
-    if current_driver is not None:
-        current_driver.quit()
-        current_driver = None
+def setup_adb():
+    if not is_adb_service_running():
+        return start_adb_service()
+    else:
+        print("adb service is already running")
+        return True
 
 
 def start_appium_service():
     global current_appium
-    socket_number = get_available_socket()
+    socket_number = get_available_appium_socket()
     if socket_number == 0:
         print("Could not get the free port")
         return
@@ -96,6 +99,39 @@ def start_appium_service():
         return True
     run_cmd_in_spawned_process(Commands.APPIUM.value.format(socket_number))
     current_appium = urlparse(temp_appium_url)
+
+
+def start_adb_service():
+    if get_config("adb_sockets") is not None and get_config("adb_sockets")[0] is not None:
+        run_cmd_in_spawned_process(Commands.ADB_START.value.format(get_config("adb_sockets").split(",")[0]))
+        print("adb service is started")
+    else:
+        print("No socket provided in the config.yaml")
+        return False
+
+
+def stop_adb_service():
+    run_sync_cmd(Commands.ADB_STOP.value)
+    print("adb service stopped")
+
+
+def get_open_adb_service_port():
+    adb_sockets = get_config("adb_sockets").split(",")
+    adb_host = get_config("adb_host")
+    if not (adb_sockets is not None and adb_host is not None and len(adb_sockets) > 0):
+        print("No sockets or host found in config.yaml to check open port")
+        return 0
+    for adb_socket in adb_sockets:
+        if not is_socket_available(get_config("adb_host"), int(adb_socket)):
+            return int(adb_socket)
+    return 0
+
+
+def is_adb_service_running():
+    if get_open_adb_service_port() == 0:
+        return False
+    else:
+        return True
 
 
 def is_appium_service_running(appium_url):
@@ -117,7 +153,14 @@ def stop_appium_service():
         print("Appium service was not started hence not required to stop")
 
 
+def quit_driver():
+    global current_driver
+    if current_driver is not None:
+        current_driver.quit()
+        current_driver = None
+
+
 if __name__ == '__main__':
     Args.set_arguments()
-    start_appium_service()
-    stop_appium_service()
+    setup_adb()
+    stop_adb_service()

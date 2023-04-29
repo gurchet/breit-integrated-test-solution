@@ -11,11 +11,13 @@ class DevicePlatform(Enum):
 
 
 class Commands(Enum):
-    ADB_DEVICES = "source ~/.bash_profile;adb devices_str"
+    ADB_DEVICES = "source ~/.bash_profile;adb devices"
     ADB_INSTALL = "source ~/.bash_profile;adb -s {} install -r {}"
     BEHAVEX = "source ~/.bash_profile;behavex "
     APPIUM = "source ~/.bash_profile;appium -p {}"
     APP_KILL = "source ~/.bash_profile;kill -9 {}"
+    ADB_START = "source ~/.bash_profile;adb -P {} start-server"
+    ADB_STOP = "source ~/.bash_profile;adb kill-server"
 
 
 class Urls(Enum):

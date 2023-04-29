@@ -1,10 +1,10 @@
-appium_host:127.0.0.1
-appium_auto_run:false
-app_auto_install:false
-capabilities_location:None
-test_data_location:None
-android_page_objects_package:None
-ios_page_objects_package:None
-platform:ANDROID
-sockets:4723
-app_path:None
+appium_host: "127.0.0.1"
+appium_auto_run: "False"
+app_auto_install: "False"
+capabilities_location: "None"
+test_data_location: "None"
+android_page_objects_package: "None"
+ios_page_objects_package: "None"
+platform: "ANDROID"
+sockets: "4723"
+app_path: "None"

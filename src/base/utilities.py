@@ -84,13 +84,13 @@ def run_and_capture_cmd(cmd):
 
 def get_connected_devices():
     host = get_config("adb_host")
-    ports = get_config("adb_sockets")
+    ports = get_config("adb_sockets").split(",")
     if host is None or ports is None:
         print("adb_host or adb_sockets not available")
         return None
     for port in ports:
-        if not is_socket_available(host, port):
-            client = AdbClient(host="127.0.0.1", port=5037)
+        if not is_socket_available(host, int(port)):
+            client = AdbClient(host, port)
             return client.devices()
     return None
 

@@ -163,4 +163,4 @@ def quit_driver():
 if __name__ == '__main__':
     Args.set_arguments()
     setup_adb()
-    stop_adb_service()
+    setup_device()

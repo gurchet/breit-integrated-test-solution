@@ -9,4 +9,4 @@ LOGGER = logging.getLogger(__name__)
 
 class LoginPage(BasePage):
     def click_on_login_button(self):
-        self.click(By.id('qiuwre'))
+        self.click(By.id(''))

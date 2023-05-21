@@ -2,7 +2,13 @@ import argparse
 import os
 from enum import Enum
 
-ROOT_PATH = os.path.dirname(os.path.abspath('__file__'))[0:-8]
+ROOT_PATH = os.path.dirname(os.path.abspath('__file__')).removesuffix('/base')
+
+
+class CurrentRun(object):
+    current_device = None
+    current_appium = None
+    current_driver = None
 
 
 class DevicePlatform(Enum):
@@ -13,7 +19,8 @@ class DevicePlatform(Enum):
 class Commands(Enum):
     ADB_DEVICES = "source ~/.bash_profile;adb devices"
     ADB_INSTALL = "source ~/.bash_profile;adb -s {} install -r {}"
-    BEHAVEX = "source ~/.bash_profile;behavex "
+    BEHAVEX = "source ~/.bash_profile;behavex {}"
+    BEHAVE = "source ~/.bash_profile;behave {}"
     APPIUM = "source ~/.bash_profile;appium -p {}"
     APP_KILL = "source ~/.bash_profile;kill -9 {}"
     ADB_START = "source ~/.bash_profile;adb -P {} start-server"
@@ -38,12 +45,16 @@ class Args:
         return cls.main_args
 
     @classmethod
-    def get_extra_args(cls):
-        return cls.main_args
+    def get_extra_args_str(cls):
+        return " ".join(cls.extra_args)
+
+    @classmethod
+    def get_extra_args_dict(cls):
+        return cls.convert_extra_args_to_dict(cls.extra_args)
 
     @classmethod
     def get(cls, name):
-        return cls.main_args[name] if name in cls.main_args is not None else cls.extra_args[name]
+        return cls.get_main_args()[name] if name in cls.get_main_args() is not None else cls.get_extra_args_dict()[name]
 
     @classmethod
     def convert_extra_args_to_dict(cls, extra_args_list):
@@ -83,8 +94,8 @@ class Args:
                             default="staging")
         parser.add_argument("--platform",
                             help="Operating system of the device where you want to run the tests. i.e - platform: ["
-                                 "'ANDROID','IOS']",
-                            nargs='?', type=str, choices=["ANDROID", "IOS"], const="ANDROID", default="ANDROID")
+                                 "'android','ios']",
+                            nargs='?', type=str, choices=["android", "ios"], default="android")
         parser.add_argument("--appium_auto_run",
                             help="Provide True if you want to auto run appium server. i.e - appium_auto_run: ['True', "
                                  "'False']",
@@ -93,15 +104,25 @@ class Args:
                             nargs='?',
                             type=str,
                             const="127.0.0.1", default="127.0.0.1")
-        parser.add_argument("--appium_port", help="Appium port where your appium is running. i.e 4723",
+        parser.add_argument("--adb_host", help="ADB host where your appium is running. i.e 127.0.0.1",
+                            nargs='?',
+                            type=str,
+                            const="127.0.0.1", default="127.0.0.1")
+        parser.add_argument("--appium_ports", help="Appium port where your appium is running. i.e 4723",
                             nargs='?',
                             type=str,
                             const="4723", default="4723")
+        parser.add_argument("--adb_ports", help="ADB port where your adb is running. i.e 5037",
+                            nargs='?',
+                            type=str,
+                            const="5037", default="5037")
         parser.add_argument("--app_auto_install",
                             help="Provide True if you want to auto install the AUT. i.e - app_auto_install: ['True', "
                                  "'False']",
                             nargs='?', type=str, choices=["True", "False"], const="True", default="True")
-        parser.add_argument("--app_path", help="The location of the AUT", type=str)
+        parser.add_argument("--app_path", help="The location of the AUT", nargs='?', type=str, const="~/Downloads"
+                                                                                                     "/test.apk",
+                            default="~/Downloads/test.apk")
         args, extra_args = parser.parse_known_args()
         cls.main_args = vars(args)
-        cls.extra_args = cls.convert_extra_args_to_dict(extra_args)
+        cls.extra_args = extra_args

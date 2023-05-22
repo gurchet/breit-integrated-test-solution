@@ -121,8 +121,8 @@ class Args:
                                  "'False']",
                             nargs='?', type=str, choices=["True", "False"], const="True", default="True")
         parser.add_argument("--app_path", help="The location of the AUT", nargs='?', type=str, const="~/Downloads"
-                                                                                                     "/test.apk",
-                            default="~/Downloads/test.apk")
+                                                                                                     "/aut.apk",
+                            default="~/Downloads/aut.apk")
         args, extra_args = parser.parse_known_args()
         cls.main_args = vars(args)
         cls.extra_args = extra_args

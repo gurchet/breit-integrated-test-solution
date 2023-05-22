@@ -1,4 +1,4 @@
-import time
+import sys
 
 from base.constants import Args
 from base.services import setup_adb, setup_appium, setup_device, setup_driver, quit_driver, stop_appium, \
@@ -9,11 +9,11 @@ def before_all(context):
     print('Before all executed')
     Args.set_arguments()
     if setup_adb() is False:
-        context.__ContextMaskWarning_runner.aborted = True
+        sys.exit("adb service could not get started")
     if setup_device() is False:
-        context.__ContextMaskWarning_runner.aborted = True
+        sys.exit("The device could not get setup")
     if setup_appium() is False:
-        context.__ContextMaskWarning_runner.aborted = True
+        sys.exit("The appium service could not get started")
 
 
 def before_scenario(scenario, context):

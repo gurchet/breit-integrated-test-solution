@@ -4,6 +4,8 @@ import socket
 import subprocess
 import sys
 from contextlib import closing
+from os.path import exists
+from ppadb.device import Device
 
 import yaml
 from ppadb.client import Client as AdbClient
@@ -37,9 +39,9 @@ def get_device():
 
 def get_available_devices(devices):
     available_devices = []
-    for device_name in devices:
-        if is_device_available(device_name) is True:
-            available_devices.append(device_name)
+    for device in devices:
+        if is_device_available(device.serial) is True:
+            available_devices.append(device.serial)
     return available_devices
 
 
@@ -55,12 +57,11 @@ def get_capabilities(capability_name):
 
 
 def get_capabilities_location():
-    try:
-        location = os.path.join(ROOT_PATH, 'resources', 'capabilities.json')
-        open(location)
-        return location
-    except FileNotFoundError as error:
-        return get_config('capabilities_location')
+    location = os.path.join(ROOT_PATH, 'resources', 'capabilities.json')
+    if location is not None:
+        if exists(location):
+            return location
+    return os.path.join(ROOT_PATH, get_config('capabilities_location'))
 
 
 def get_config(key):
@@ -148,11 +149,11 @@ def is_appium_running_on_port(port):
 
 
 def install_app_on_device(device_name, app_path):
-    return run_sync_cmd(Commands.ADB_INSTALL.format(device_name, app_path))
+    return run_sync_cmd(Commands.ADB_INSTALL.value.format(device_name, app_path))
 
 
 def get_available_appium_service_port():
-    ports = Args.get("appium_ports").split[","]
+    ports = Args.get("appium_ports").split(",")
     host = Args.get("appium_host")
     for port in ports:
         port = int(port)

@@ -4,5 +4,4 @@ behave~=1.2.6
 selenium~=4.9.0
 argparse~=1.4.0
 requests~=2.29.0
-pyyaml
 pure-python-adb

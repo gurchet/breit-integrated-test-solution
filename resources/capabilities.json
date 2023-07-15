@@ -8,5 +8,15 @@
 		"appPackage": "com.fivemobile.thescore",
 		"appActivity": ".ui.MainActivity",
 		"noReset": false
+	},
+	{
+		"platformName": "Android",
+		"deviceName": "99191FFAZ0045K",
+		"automationName": "uiAutomator2",
+		"osVersion": "13",
+		"appType": "native",
+		"appPackage": "com.fivemobile.thescore",
+		"appActivity": ".ui.MainActivity",
+		"noReset": false
 	}
 ]

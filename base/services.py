@@ -1,22 +1,22 @@
-import sys
-import time
 from urllib.parse import urlparse
 
 from appium import webdriver
 
 from base.constants import Commands, Args, Urls, CurrentRun
+from base.loggings import Logging
 from base.utilities import install_app_on_device, get_device, build_behave_command, \
     run_and_capture_cmd, run_cmd_in_spawned_process, run_sync_cmd, \
-    get_open_adb_service_port, get_available_appium_service_port, is_appium_running_on_port, get_config, \
-    get_capabilities_location
+    get_open_adb_service_port, get_available_appium_service_port, is_appium_running_on_port
+
+logger = Logging.get_logger(__name__)
 
 
 def run_tests():
     output, error = run_and_capture_cmd(build_behave_command())
     if output is not None:
-        print(output)
+        logger.info(output)
     if error is not None:
-        print(error)
+        logger.error(error)
 
 
 def get_driver():
@@ -39,13 +39,13 @@ def setup_driver():
         CurrentRun.current_driver = webdriver.Remote(CurrentRun.current_appium,
                                                      CurrentRun.current_device.get_capabilities())
         if CurrentRun.current_driver is not None:
-            print("The driver created successfully")
+            logger.info("The driver created successfully")
             return True
         else:
-            print("The driver could not get created")
+            logger.error("The driver could not get created")
             return False
     else:
-        print("The driver already exists")
+        logger.info("The driver already exists")
         return True
 
 
@@ -57,16 +57,16 @@ def setup_appium():
     if CurrentRun.current_appium is None:
         port_number = get_available_appium_service_port()
         if port_number == 0:
-            print("Could not get the free port for appium")
+            logger.error("Could not get the free port for appium")
             return False
         else:
             start_appium_service(port_number)
             CurrentRun.current_appium = urlparse(
-            Urls.APPIUM_HUB_URL.value.format(Args.get("appium_host"), port_number))
+                Urls.APPIUM_HUB_URL.value.format(Args.get("appium_host"), port_number))
             return True
     else:
         if is_appium_running_on_port(CurrentRun.current_appium.port):
-            print("Appium server is already started on port {}!".format(CurrentRun.current_appium.port))
+            logger.info("Appium server is already started on port {}!".format(CurrentRun.current_appium.port))
         else:
             if start_appium_service(CurrentRun.current_appium.port):
                 CurrentRun.current_appium = urlparse(
@@ -80,53 +80,57 @@ def setup_device():
     if CurrentRun.current_device is None:
         CurrentRun.current_device = get_device()
         if CurrentRun.current_device is None:
-            print("Device could get created")
+            logger.error("Device could get created")
             return False
         else:
-            print("Device created successfully!")
+            logger.info("Device created successfully!")
     else:
-        print("Device already exists")
+        logger.info("Device already exists")
+
+
+def install_app():
+    app_path = Args.get('app_path') if Args.get('app_path') is not None else con
     if Args.get('app_path') is not None:
         result = install_app_on_device(CurrentRun.current_device.get_name(), Args.get('app_path'))
         if "Success" in result:
-            print("App is installed successfully!")
+            logger.info("App is installed successfully!")
             return True
         else:
-            print("The app could not get installed in device " + CurrentRun.current_device.get_name())
+            logger.error("The app could not get installed in device " + CurrentRun.current_device.get_name())
             return False
     else:
-        print("App path is missing in args")
+        logger.error("App path is missing in args")
 
 
 def setup_adb():
     if not is_adb_service_running():
         return start_adb_service()
     else:
-        print("adb service is already running!")
+        logger.error("adb service is already running!")
         return True
 
 
 def start_appium_service(port):
     try:
         run_cmd_in_spawned_process(Commands.APPIUM.value.format(port))
-        print("appium service is started successfully!")
+        logger.info("appium service is started successfully!")
         return True
-    except Exception:
+    except:
         return False
 
 
 def start_adb_service():
     try:
         run_cmd_in_spawned_process(Commands.ADB_START.value.format(Args.get("adb_port").split(",")[0]))
-        print("adb service is started")
+        logger.info("adb service is started")
         return True
-    except Exception:
+    except:
         return False
 
 
 def stop_adb():
     run_sync_cmd(Commands.ADB_STOP.value)
-    print("adb service stopped")
+    logger.info("adb service stopped")
 
 
 def is_adb_service_running():
@@ -139,11 +143,11 @@ def is_adb_service_running():
 def stop_appium():
     appium_auto_run = Args.get("appium_auto_run")
     if appium_auto_run is None or appium_auto_run == "True":
-        print("Stopping Appium server")
+        logger.info("Stopping Appium server")
         run_sync_cmd(Commands.APP_KILL.value.format(CurrentRun.current_appium.port))
         CurrentRun.current_appium = None
     else:
-        print("Appium service was not started hence not required to stop")
+        logger.error("Appium service was not started hence not required to stop")
 
 
 def quit_driver():

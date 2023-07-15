@@ -2,7 +2,10 @@ import argparse
 import os
 from enum import Enum
 
+from base.loggings import Logging
+
 ROOT_PATH = os.path.dirname(os.path.abspath('__file__')).removesuffix('/base')
+logger = Logging.get_logger(__name__)
 
 
 class CurrentRun(object):

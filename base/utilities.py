@@ -11,8 +11,12 @@ import yaml
 from ppadb.client import Client as AdbClient
 
 from base.constants import Commands, Args, Path, ROOT_PATH
+from base.loggings import Logging
 from base.request_helper import get_appium_status
 from base.objects import Device
+
+
+logger = Logging.get_logger(__name__)
 
 
 def build_behave_command():
@@ -21,27 +25,32 @@ def build_behave_command():
 
 def get_device():
     connected_devices = get_connected_devices()
-    platform = Args.get("platform")
+    desired_platform = Args.get("platform")
     if connected_devices is None or len(connected_devices) < 1:
-        print("No connected device found")
+        logger.error("No connected device found!")
         return None
+    else:
+        logger.info("Connected devices : "+str(connected_devices))
     available_devices = get_available_devices(connected_devices)
     if len(available_devices) < 1:
-        print("No available device found")
+        logger.error("No available device found!")
         return None
+    else:
+        logger.info("Available devices : "+str(available_devices))
     for device_name in available_devices:
         capabilities = get_capabilities(device_name)
         if capabilities is not None:
-            platform = capabilities['platformName']
-            return Device(device_name, platform, True, capabilities)
+            actual_platform = capabilities['platformName']
+            if actual_platform is desired_platform:
+                return Device(device_name, actual_platform, True, capabilities)
     return None
 
 
 def get_available_devices(devices):
     available_devices = []
     for device in devices:
-        if is_device_available(device.serial) is True:
-            available_devices.append(device.serial)
+        if is_device_available(device) is True:
+            available_devices.append(device)
     return available_devices
 
 
@@ -69,14 +78,14 @@ def get_config(key):
         try:
             return search_config(yaml.load(file, yaml.FullLoader), key)
         except yaml.YAMLError as exc:
-            print(exc)
+            logger.error(exc)
 
 
 def search_config(config_data, search_key):
     for key in search_key.split('.'):
         temp_config_data = config_data[key]
         if temp_config_data is None:
-            print("Config {} not found".format(key))
+            logger.error("Config {} not found".format(key))
             return None
         config_data = temp_config_data
     return config_data
@@ -106,15 +115,19 @@ def run_and_record_cmd(cmd):
 def get_connected_devices():
     adb_client = get_adb_client()
     if adb_client is None:
-        print("ADB client is not found")
+        logger.error("ADB client is not found")
+        return None
     else:
-        return adb_client.devices()
+        connected_devices = []
+        for device in adb_client.devices():
+            connected_devices.append(device.serial)
+        return connected_devices
 
 
 def get_adb_client():
     adb_host = Args.get("adb_host")
     if get_open_adb_service_port() is None:
-        print("adb not available")
+        logger.error("adb not available")
         return None
     else:
         return AdbClient(adb_host, get_open_adb_service_port())
@@ -125,7 +138,7 @@ def get_open_adb_service_port():
     adb_ports = Args.get("adb_ports")
     adb_ports = adb_ports.split(",")
     if not (adb_ports is not None and adb_host is not None and len(adb_ports) > 0):
-        print("No sockets or host found to check open port")
+        logger.error("No sockets or host found to check open port")
         return 0
     for adb_port in adb_ports:
         if not is_port_available(adb_host, int(adb_port)):

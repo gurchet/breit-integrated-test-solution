@@ -4,7 +4,7 @@ from selenium.webdriver.common.by import By
 
 from page_objects.base_page import BasePage
 
-LOGGER = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class LoginPage(BasePage):

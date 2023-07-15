@@ -1,3 +1,8 @@
+from base.loggings import Logging
+
+logger = Logging.get_logger(__name__)
+
+
 class Device:
 
     def __init__(self, name, os, availability, capabilities):

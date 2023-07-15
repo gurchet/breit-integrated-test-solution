@@ -12,13 +12,9 @@ class Logging:
 
     @classmethod
     def get_logger(cls, name):
-        if not name.startswith(cls.PACKAGE_NAME):
-            raise RuntimeError("The package logger name should be 'base.xxx.xxx' but {}".format(name))
-
         logger = logging.getLogger(name)
         if logger.handlers:
             logger.handlers[0].setFormatter(cls.DEFAULT_FORMAT)
-
         return logger
 
     @classmethod
